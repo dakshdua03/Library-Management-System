@@ -1,9 +1,9 @@
-import os
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from werkzeug.utils import secure_filename
 from app.extensions import db
 from app.models import BookTitle, BookCopy
 from app.services import clean_isbn, fetch_book_metadata, download_cover_locally
+from app.bulk_service import process_bulk_csv
 from app.auth_helpers import login_required, role_required
 
 catalog_bp = Blueprint('catalog', __name__, url_prefix='/catalog')
@@ -26,7 +26,6 @@ def api_fetch_isbn():
 @login_required
 @role_required('Admin', 'Librarian')
 def add_by_isbn():
-    """Full implementation of Sequence Diagram 5: Add Book by ISBN with API auto-fetch & offline cover."""
     if request.method == 'POST':
         raw_isbn = request.form.get('isbn', '').strip()
         isbn = clean_isbn(raw_isbn)
@@ -45,15 +44,12 @@ def add_by_isbn():
             flash('ISBN, Title, and Accession Number are mandatory fields.', 'danger')
             return render_template('catalog/add_isbn.html')
 
-        # Check if accession number already exists globally
         if BookCopy.query.filter_by(accession_no=accession_no).first():
             flash(f'Validation Error: Accession Number "{accession_no}" already exists! Copies must have unique accession numbers.', 'danger')
             return render_template('catalog/add_isbn.html')
 
-        # Check if BookTitle exists or create it
         book_title = BookTitle.query.get(isbn)
         if not book_title:
-            # Download cover image locally if URL provided
             cover_path = None
             if cover_url:
                 cover_path = download_cover_locally(cover_url, isbn)
@@ -69,7 +65,6 @@ def add_by_isbn():
             )
             db.session.add(book_title)
 
-        # Create the initial physical copy
         initial_copy = BookCopy(
             accession_no=accession_no,
             isbn=isbn,
@@ -89,7 +84,6 @@ def add_by_isbn():
 @login_required
 @role_required('Admin', 'Librarian')
 def manual_add_title():
-    """Manual entry fallback when both APIs fail or network is offline."""
     if request.method == 'POST':
         raw_isbn = request.form.get('isbn', '').strip()
         isbn = clean_isbn(raw_isbn)
@@ -111,7 +105,6 @@ def manual_add_title():
             flash(f'Accession Number "{accession_no}" already exists.', 'danger')
             return render_template('catalog/manual_add.html')
 
-        # Handle local cover upload
         cover_path = None
         cover_file = request.files.get('cover_file')
         if cover_file and cover_file.filename:
@@ -153,7 +146,6 @@ def manual_add_title():
 @login_required
 @role_required('Admin', 'Librarian')
 def add_copy(isbn):
-    """Add additional physical copies to an existing book title."""
     title = BookTitle.query.get_or_404(isbn)
 
     if request.method == 'POST':
@@ -183,3 +175,25 @@ def add_copy(isbn):
         return redirect(url_for('catalog.list_books'))
 
     return render_template('catalog/add_copy.html', title=title)
+
+# --- Sprint 4: Bulk CSV Onboarding ---
+
+@catalog_bp.route('/bulk-csv', methods=['GET', 'POST'])
+@login_required
+@role_required('Admin', 'Librarian')
+def bulk_csv():
+    """Bulk CSV book onboarding endpoint with summary report."""
+    summary = None
+    if request.method == 'POST':
+        csv_file = request.files.get('csv_file')
+        if not csv_file or not csv_file.filename.endswith('.csv'):
+            flash('Please upload a valid .csv file.', 'danger')
+            return render_template('catalog/bulk_csv.html', summary=None)
+
+        summary = process_bulk_csv(csv_file.stream)
+        if summary['success_count'] > 0:
+            flash(f"Bulk Onboarding Complete: {summary['success_count']} book copies added successfully!", 'success')
+        if summary['failed_count'] > 0:
+            flash(f"{summary['failed_count']} rows failed validation.", 'warning')
+
+    return render_template('catalog/bulk_csv.html', summary=summary)

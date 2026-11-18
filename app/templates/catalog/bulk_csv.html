@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Bulk CSV Onboarding - LMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold text-dark mb-1"><i class="bi bi-file-earmark-spreadsheet-fill text-success me-2"></i>Bulk Book Onboarding (CSV Upload)</h3>
+                    <p class="text-muted mb-0">Import hundreds of books in seconds with automated ISBN API lookup &amp; cover download.</p>
+                </div>
+                <a href="{{ url_for('catalog.list_books') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Catalog List
+                </a>
+            </div>
+
+            <!-- Upload Box -->
+            <form method="POST" action="{{ url_for('catalog.bulk_csv') }}" enctype="multipart/form-data" class="mb-4">
+                <div class="bg-light p-4 rounded border text-center">
+                    <i class="bi bi-cloud-arrow-up display-3 text-primary mb-2 d-block"></i>
+                    <h5 class="fw-bold mb-2">Upload Books CSV File</h5>
+                    <p class="small text-muted mb-3">Required Columns: <code>ISBN</code>, <code>Accession Number</code>, <code>Rack</code>, <code>Shelf</code> (Title &amp; Author optional)</p>
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <input type="file" name="csv_file" class="form-control mb-3" accept=".csv" required>
+                            <button type="submit" class="btn btn-success px-4 btn-lg">
+                                <i class="bi bi-upload me-1"></i> Process Bulk CSV Upload
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Sample CSV format helper -->
+            <div class="card bg-white border p-3 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-bold mb-0 small text-secondary"><i class="bi bi-info-circle text-primary me-1"></i>Sample CSV Structure:</h6>
+                    <button class="btn btn-sm btn-outline-primary" onclick="downloadSampleCsv()">
+                        <i class="bi bi-download me-1"></i> Download Sample CSV Template
+                    </button>
+                </div>
+                <pre class="bg-light p-2 rounded small mb-0 font-monospace text-dark">
+ISBN,Accession Number,Rack,Shelf,Title,Author
+9780132350884,ACC-5001,Rack A1,Shelf 1,Clean Code,Robert C. Martin
+9780201633610,ACC-5002,Rack A1,Shelf 2,Design Patterns,Erich Gamma
+9780134685991,ACC-5003,Rack B1,Shelf 1,Effective Java,Joshua Bloch</pre>
+            </div>
+
+            <!-- Summary Report of Upload -->
+            {% if summary %}
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-clipboard-data text-primary me-2"></i>Import Summary Report</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="p-3 rounded bg-light border text-center">
+                                <div class="small text-muted">Total Rows Processed</div>
+                                <div class="fs-4 fw-bold text-dark">{{ summary.total_rows }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded bg-success-subtle border border-success text-center">
+                                <div class="small text-success fw-bold">Successfully Added</div>
+                                <div class="fs-4 fw-bold text-success">{{ summary.success_count }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded bg-danger-subtle border border-danger text-center">
+                                <div class="small text-danger fw-bold">Failed Rows</div>
+                                <div class="fs-4 fw-bold text-danger">{{ summary.failed_count }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Errors breakdown -->
+                    {% if summary.errors %}
+                    <h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle-fill me-1"></i>Failed Rows Breakdown:</h6>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>CSV Row</th>
+                                    <th>ISBN</th>
+                                    <th>Accession</th>
+                                    <th>Failure Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for err in summary.errors %}
+                                <tr>
+                                    <td>Line {{ err.row }}</td>
+                                    <td><code>{{ err.isbn or '-' }}</code></td>
+                                    <td><code>{{ err.accession or '-' }}</code></td>
+                                    <td class="text-danger fw-semibold">{{ err.reason }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+
+                    <!-- Successes breakdown -->
+                    {% if summary.successes %}
+                    <h6 class="fw-bold text-success mb-2"><i class="bi bi-check-circle-fill me-1"></i>Successfully Cataloged Books:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Row</th>
+                                    <th>ISBN</th>
+                                    <th>Accession</th>
+                                    <th>Book Title</th>
+                                    <th>Rack / Shelf</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in summary.successes %}
+                                <tr>
+                                    <td>Line {{ s.row }}</td>
+                                    <td><code>{{ s.isbn }}</code></td>
+                                    <td><span class="badge bg-dark">{{ s.accession }}</span></td>
+                                    <td>{{ s.title }}</td>
+                                    <td>{{ s.rack }}, {{ s.shelf }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function downloadSampleCsv() {
+    const csvContent = "data:text/csv;charset=utf-8,ISBN,Accession Number,Rack,Shelf,Title,Author\n9780132350884,ACC-5001,Rack A1,Shelf 1,Clean Code,Robert C. Martin\n9780201633610,ACC-5002,Rack A1,Shelf 2,Design Patterns,Erich Gamma\n9780134685991,ACC-5003,Rack B1,Shelf 1,Effective Java,Joshua Bloch";
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "library_books_sample.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+{% endblock %}

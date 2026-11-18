@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}Overdue Books Report - LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-1"><i class="bi bi-clock-history text-danger me-2"></i>Overdue Books &amp; Fine Recovery Report</h3>
+        <p class="text-muted mb-0">Track active defaults across academic departments, calculate accrued fines, and export CSV logs.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('reports.overdue_report', department=selected_dept, role=selected_role, export='csv') }}" class="btn btn-success">
+            <i class="bi bi-file-earmark-arrow-down me-1"></i> Export Overdue CSV
+        </a>
+    </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('reports.overdue_report') }}" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <label class="form-label small fw-bold text-secondary mb-1">Filter by Department</label>
+                <select name="department" class="form-select">
+                    <option value="">All Academic Departments</option>
+                    {% for d in departments %}
+                    <option value="{{ d }}" {% if selected_dept == d %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-secondary mb-1">Filter by Role</label>
+                <select name="role" class="form-select">
+                    <option value="">All Patron Roles</option>
+                    <option value="Student" {% if selected_role == 'Student' %}selected{% endif %}>Student</option>
+                    <option value="Faculty" {% if selected_role == 'Faculty' %}selected{% endif %}>Faculty</option>
+                    <option value="Staff" {% if selected_role == 'Staff' %}selected{% endif %}>Staff</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary flex-fill">
+                    <i class="bi bi-filter me-1"></i> Apply Filters
+                </button>
+                {% if selected_dept or selected_role %}
+                <a href="{{ url_for('reports.overdue_report') }}" class="btn btn-outline-secondary">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Overdue Records Table -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <span class="fw-bold text-secondary">Active Overdue Loans: <strong>{{ rows|length }}</strong> record(s)</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Loan #</th>
+                        <th>Patron Information</th>
+                        <th>Role &amp; Dept</th>
+                        <th>Book Title &amp; Accession</th>
+                        <th>Due Date</th>
+                        <th>Days Overdue</th>
+                        <th>Accrued Fine</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in rows %}
+                    <tr>
+                        <td><span class="badge bg-secondary font-monospace">#{{ r.tx_id }}</span></td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ r.patron_name }}</div>
+                            <div class="small text-muted font-monospace">{{ r.roll_number }} &bull; {{ r.email }}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-info-subtle text-dark border">{{ r.role }}</span>
+                            <div class="small text-muted mt-1">{{ r.department }}</div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ r.title }}</div>
+                            <div class="small"><span class="badge bg-dark font-monospace">{{ r.accession_no }}</span></div>
+                        </td>
+                        <td class="small fw-bold text-danger">{{ r.due_date }}</td>
+                        <td>
+                            <span class="badge bg-danger fs-6">{{ r.days_overdue }} days</span>
+                        </td>
+                        <td>
+                            <strong class="text-danger fs-6">Rs. {{ "%.2f"|format(r.fine_amount) }}</strong>
+                            <div class="small text-muted">@ Rs. 2/day (cap Rs. 200)</div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-shield-check display-3 text-success d-block mb-2"></i>
+                            <h5 class="fw-bold text-success">No Overdue Loans Found!</h5>
+                            <p class="text-muted">All active book loans are currently within their due dates.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

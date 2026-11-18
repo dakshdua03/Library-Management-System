@@ -110,12 +110,26 @@
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('catalog.add_by_isbn') }}"><i class="bi bi-upc-scan me-2"></i>Add Book (ISBN Auto-Fetch)</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('catalog.manual_add_title') }}"><i class="bi bi-pencil-square me-2"></i>Manual Book Entry</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('catalog.bulk_csv') }}"><i class="bi bi-file-earmark-spreadsheet me-2 text-success"></i>Bulk CSV Onboarding</a></li>
                             {% endif %}
                         </ul>
                     </li>
 
-                    <!-- Admin Only: Patron & Borrowing Rules Management -->
+                    <!-- Reports & Analytics (Admin Only) -->
                     {% if session.get('user_role') == 'Admin' %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-success" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-bar-chart-line-fill me-1"></i>Reports
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('reports.overdue_report') }}"><i class="bi bi-clock-history me-2 text-danger"></i>Overdue Books CSV Report</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('reports.popular_report') }}"><i class="bi bi-fire me-2 text-warning"></i>Top 20 Popular Books</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('reports.notification_logs') }}"><i class="bi bi-envelope-paper me-2 text-info"></i>Notification Audit Log</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Patron & Borrowing Rules Management -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle text-info" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-people-fill me-1"></i>Patron Mgmt
@@ -178,7 +192,7 @@
     <footer class="py-3 text-center text-muted">
         <div class="container d-flex justify-content-between align-items-center">
             <small>Library Management System &bull; MCA Minor Project</small>
-            <span class="badge bg-primary">Sprint 3: Student Self-Service &amp; FCFS Reservations</span>
+            <span class="badge bg-success">Sprint 4 Complete (All Sprints Delivered)</span>
         </div>
     </footer>
 
