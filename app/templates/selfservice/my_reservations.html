@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}My Reservations - LMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold text-dark mb-1"><i class="bi bi-bookmark-star text-warning me-2"></i>My Book Reservations</h3>
+                    <p class="text-muted mb-0">Track your FCFS position in waitlists and manage holds.</p>
+                </div>
+                <a href="{{ url_for('selfservice.search') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-search me-1"></i> Search Catalog
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Book Title</th>
+                            <th>ISBN</th>
+                            <th>Reserved On</th>
+                            <th>Waitlist Position</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in reservations %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">{{ r.title_rel.title }}</div>
+                                <div class="small text-muted">By {{ r.title_rel.authors or 'Unknown' }}</div>
+                            </td>
+                            <td><span class="badge bg-dark font-monospace">{{ r.isbn }}</span></td>
+                            <td class="small">{{ r.request_date.strftime('%d-%m-%Y %H:%M') }}</td>
+                            <td>
+                                <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                                    <i class="bi bi-person-lines-fill me-1"></i> #{{ r.queue_position }} in line
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info-subtle text-info border border-info">{{ r.status }}</span>
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ url_for('selfservice.cancel_reservation', res_id=r.id) }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to cancel your reservation for this book?')">
+                                        <i class="bi bi-x-circle me-1"></i> Cancel Hold
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                You have no active reservations. If a book you want is checked out, you can reserve it from the 
+                                <a href="{{ url_for('selfservice.search') }}">Catalog Search</a>!
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

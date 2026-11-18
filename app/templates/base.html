@@ -67,6 +67,22 @@
                         </a>
                     </li>
 
+                    <!-- Search Books (All Patrons) -->
+                    <li class="nav-item">
+                        <a class="nav-link text-info {% if request.endpoint == 'selfservice.search' %}active{% endif %}" href="{{ url_for('selfservice.search') }}">
+                            <i class="bi bi-search me-1"></i>Search Catalog
+                        </a>
+                    </li>
+
+                    <!-- Student Self-Service: My Reservations -->
+                    {% if session.get('user_role') == 'Student' %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'selfservice.my_reservations' %}active{% endif %}" href="{{ url_for('selfservice.my_reservations') }}">
+                            <i class="bi bi-bookmark-star me-1"></i>My Reservations
+                        </a>
+                    </li>
+                    {% endif %}
+
                     <!-- Circulation Desk (Admin & Librarian) -->
                     {% if session.get('user_role') in ['Admin', 'Librarian'] %}
                     <li class="nav-item dropdown">
@@ -78,17 +94,18 @@
                             <li><a class="dropdown-item" href="{{ url_for('circulation.return_book') }}"><i class="bi bi-box-arrow-in-left me-2 text-success"></i>Return Book Counter</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('circulation.active_loans') }}"><i class="bi bi-list-check me-2"></i>Active Loans Directory</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('selfservice.admin_queue') }}"><i class="bi bi-hourglass-split me-2 text-warning"></i>Reservation Waitlists</a></li>
                         </ul>
                     </li>
                     {% endif %}
 
-                    <!-- Catalog Nav (All users can view, Librarian/Admin can add) -->
+                    <!-- Catalog Nav -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-collection me-1"></i>Catalog
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('catalog.list_books') }}"><i class="bi bi-search me-2"></i>Browse Books</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('catalog.list_books') }}"><i class="bi bi-card-list me-2"></i>Browse Inventory</a></li>
                             {% if session.get('user_role') in ['Admin', 'Librarian'] %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('catalog.add_by_isbn') }}"><i class="bi bi-upc-scan me-2"></i>Add Book (ISBN Auto-Fetch)</a></li>
@@ -161,7 +178,7 @@
     <footer class="py-3 text-center text-muted">
         <div class="container d-flex justify-content-between align-items-center">
             <small>Library Management System &bull; MCA Minor Project</small>
-            <span class="badge bg-primary">Sprint 2: Core Circulation &amp; Rules</span>
+            <span class="badge bg-primary">Sprint 3: Student Self-Service &amp; FCFS Reservations</span>
         </div>
     </footer>
 

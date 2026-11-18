@@ -15,11 +15,13 @@ def create_app(config_class=Config):
     from app.routes.patrons import patrons_bp
     from app.routes.catalog import catalog_bp
     from app.routes.circulation import circulation_bp
+    from app.routes.selfservice import selfservice_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(patrons_bp)
     app.register_blueprint(catalog_bp)
     app.register_blueprint(circulation_bp)
+    app.register_blueprint(selfservice_bp)
 
     return app
