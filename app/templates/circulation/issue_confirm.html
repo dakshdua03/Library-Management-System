@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Issue Confirmation Receipt - LMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card p-4 border-top border-primary border-5 shadow">
+            <div class="text-center mb-4">
+                <i class="bi bi-check-circle-fill text-success display-4"></i>
+                <h3 class="fw-bold mt-2 text-dark">Book Checkout Confirmed!</h3>
+                <p class="text-muted small">Transaction ID: #{{ tx.id }} &bull; Issued at {{ tx.issue_date.strftime('%d-%m-%Y %H:%M') }}</p>
+            </div>
+
+            <!-- Due Date Callout Card -->
+            <div class="alert alert-warning text-center py-3 mb-4 border border-warning shadow-sm">
+                <div class="text-uppercase small fw-bold text-muted">Return Due Date</div>
+                <div class="display-6 fw-bold text-dark mt-1">
+                    {{ tx.due_date.strftime('%d-%m-%Y') }}
+                </div>
+                <div class="small text-danger fw-semibold mt-1">
+                    <i class="bi bi-clock-history me-1"></i>Late return incurs fine of Rs. 2.00 / day
+                </div>
+            </div>
+
+            <!-- Patron & Book Details Card -->
+            <div class="bg-light p-3 rounded border mb-4">
+                <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                    {% if patron.photo_path %}
+                    <img src="{{ url_for('main.uploaded_media', filename=patron.photo_path) }}" class="rounded-circle me-3" style="width: 55px; height: 55px; object-fit: cover;" alt="{{ patron.name }}">
+                    {% else %}
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold me-3" style="width: 55px; height: 55px; font-size: 1.3rem;">
+                        {{ patron.name[:1] }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h6 class="fw-bold mb-0">{{ patron.name }}</h6>
+                        <div class="small text-muted font-monospace">{{ patron.roll_number }} &bull; <span class="badge bg-secondary">{{ patron.role }}</span></div>
+                        <div class="small text-muted">{{ patron.department or 'N/A' }}</div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start">
+                    {% if copy.title_rel.cover_path %}
+                    <img src="{{ url_for('main.uploaded_media', filename=copy.title_rel.cover_path) }}" class="book-cover-thumb me-3 flex-shrink-0" alt="{{ copy.title_rel.title }}">
+                    {% else %}
+                    <div class="book-cover-thumb bg-secondary text-white d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                        <i class="bi bi-book"></i>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h6 class="fw-bold mb-1">{{ copy.title_rel.title }}</h6>
+                        <div class="small text-muted">By {{ copy.title_rel.authors or 'Unknown' }}</div>
+                        <div class="small text-secondary mt-1">
+                            Accession: <span class="badge bg-dark font-monospace">{{ copy.accession_no }}</span> &bull; 
+                            Location: Rack {{ copy.rack_no or '-' }}, Shelf {{ copy.shelf_no or '-' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between gap-2">
+                <a href="{{ url_for('circulation.active_loans') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-list-check me-1"></i> Active Loans
+                </a>
+                <div class="d-flex gap-2">
+                    <button onclick="window.print()" class="btn btn-outline-dark">
+                        <i class="bi bi-printer me-1"></i> Print Receipt
+                    </button>
+                    <a href="{{ url_for('circulation.issue_book') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i> Issue Next Book
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

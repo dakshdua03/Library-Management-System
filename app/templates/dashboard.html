@@ -17,7 +17,7 @@
 
 <!-- Overview Stats Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card p-3 border-start border-primary border-4">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -28,18 +28,29 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card p-3 border-start border-success border-4">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 class="text-muted mb-1">Total Physical Copies</h6>
+                    <h6 class="text-muted mb-1">Physical Copies</h6>
                     <h3 class="fw-bold mb-0 text-success">{{ stats.total_copies }}</h3>
                 </div>
                 <div class="fs-1 text-success opacity-50"><i class="bi bi-collection"></i></div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
+        <div class="card p-3 border-start border-warning border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Active Loans</h6>
+                    <h3 class="fw-bold mb-0 text-warning">{{ stats.active_loans }}</h3>
+                </div>
+                <div class="fs-1 text-warning opacity-50"><i class="bi bi-arrow-left-right"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
         <div class="card p-3 border-start border-info border-4">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -52,7 +63,90 @@
     </div>
 </div>
 
-<!-- Role-Specific Action Panels -->
+<!-- Student / Patron My Active Loans Card with Self-Service Renewal -->
+{% if my_loans %}
+<div class="card mb-4 border-warning">
+    <div class="card-header bg-warning-subtle py-3 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-journal-check me-2"></i>My Currently Borrowed Books ({{ my_loans|length }})</h5>
+        <span class="small text-muted">You can renew books online if no waitlist hold exists</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Accession</th>
+                        <th>Book Title</th>
+                        <th>Issue Date</th>
+                        <th>Due Date</th>
+                        <th>Renewal Status</th>
+                        <th>Self-Service Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in my_loans %}
+                    <tr>
+                        <td><span class="badge bg-dark font-monospace">{{ l.accession_no }}</span></td>
+                        <td class="fw-bold">{{ l.copy_rel.title_rel.title }}</td>
+                        <td>{{ l.issue_date.strftime('%d-%m-%Y') }}</td>
+                        <td>
+                            {% set is_overdue = l.due_date.strftime('%Y-%m-%d') < now_date %}
+                            <span class="badge {% if is_overdue %}bg-danger{% else %}bg-warning text-dark{% endif %} fs-6">
+                                {{ l.due_date.strftime('%d-%m-%Y') }}
+                            </span>
+                        </td>
+                        <td>{{ l.renewal_count }} times renewed</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('circulation.renew_book', tx_id=l.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-outline-warning btn-sm">
+                                    <i class="bi bi-arrow-repeat me-1"></i> Renew Book
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Circulation Desk Quick Actions for Librarian / Admin -->
+{% if patron.role in ['Admin', 'Librarian'] %}
+<div class="card mb-4 border-primary">
+    <div class="card-header bg-primary text-white py-3">
+        <h5 class="fw-bold mb-0"><i class="bi bi-arrow-left-right me-2"></i>Circulation Counter Desk</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a href="{{ url_for('circulation.issue_book') }}" class="btn btn-outline-primary w-100 p-3 text-start">
+                    <i class="bi bi-box-arrow-up-right fs-3 d-block mb-2"></i>
+                    <strong>Issue Book Counter</strong>
+                    <div class="small text-muted">5-point rule checks &amp; auto-due calculation</div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('circulation.return_book') }}" class="btn btn-outline-success w-100 p-3 text-start">
+                    <i class="bi bi-box-arrow-in-left fs-3 d-block mb-2"></i>
+                    <strong>Return Book Counter</strong>
+                    <div class="small text-muted">Automated fine calculation (Rs. 2/day) &amp; receipts</div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('circulation.active_loans') }}" class="btn btn-outline-warning w-100 p-3 text-start text-dark">
+                    <i class="bi bi-list-check fs-3 d-block mb-2 text-warning"></i>
+                    <strong>Active Loans Directory</strong>
+                    <div class="small text-muted">View checked-out inventory &amp; renew loans</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Admin Specific Actions -->
 {% if patron.role == 'Admin' %}
 <div class="card mb-4">
     <div class="card-header bg-white py-3">
@@ -78,7 +172,7 @@
                 <a href="{{ url_for('patrons.borrowing_rules') }}" class="btn btn-outline-warning w-100 p-3 text-start text-dark">
                     <i class="bi bi-sliders fs-4 d-block mb-2 text-warning"></i>
                     <strong>Borrowing Rules</strong>
-                    <div class="small text-muted">Configure limits, loan days & fines</div>
+                    <div class="small text-muted">Configure limits, loan days &amp; fines</div>
                 </a>
             </div>
         </div>
@@ -86,36 +180,10 @@
 </div>
 {% endif %}
 
-{% if patron.role in ['Admin', 'Librarian'] %}
-<div class="card mb-4">
-    <div class="card-header bg-white py-3">
-        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-journal-bookmark-fill text-warning me-2"></i>Cataloging Desk</h5>
-    </div>
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-6">
-                <a href="{{ url_for('catalog.add_by_isbn') }}" class="btn btn-outline-success w-100 p-3 text-start">
-                    <i class="bi bi-upc-scan fs-4 d-block mb-2"></i>
-                    <strong>Add Book via ISBN Auto-Fetch</strong>
-                    <div class="small text-muted">Auto-retrieves metadata & cover from OpenLibrary / Google Books</div>
-                </a>
-            </div>
-            <div class="col-md-6">
-                <a href="{{ url_for('catalog.manual_add_title') }}" class="btn btn-outline-secondary w-100 p-3 text-start">
-                    <i class="bi bi-pencil-square fs-4 d-block mb-2"></i>
-                    <strong>Manual Book Registration</strong>
-                    <div class="small text-muted">Offline entry fallback when external APIs fail</div>
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Borrowing Rules Matrix Display -->
+<!-- Borrowing Rules Policy Table -->
 <div class="card">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-info-circle-fill text-primary me-2"></i>Current Library Borrowing Policies</h5>
+        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-info-circle-fill text-primary me-2"></i>Library Borrowing Policies</h5>
         {% if patron.role == 'Admin' %}
         <a href="{{ url_for('patrons.borrowing_rules') }}" class="btn btn-sm btn-outline-primary">
             <i class="bi bi-pencil me-1"></i>Edit Rules

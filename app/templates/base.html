@@ -67,6 +67,21 @@
                         </a>
                     </li>
 
+                    <!-- Circulation Desk (Admin & Librarian) -->
+                    {% if session.get('user_role') in ['Admin', 'Librarian'] %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-warning" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-arrow-left-right me-1"></i>Circulation Desk
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('circulation.issue_book') }}"><i class="bi bi-box-arrow-up-right me-2 text-primary"></i>Issue Book Counter</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('circulation.return_book') }}"><i class="bi bi-box-arrow-in-left me-2 text-success"></i>Return Book Counter</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('circulation.active_loans') }}"><i class="bi bi-list-check me-2"></i>Active Loans Directory</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
                     <!-- Catalog Nav (All users can view, Librarian/Admin can add) -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -144,8 +159,9 @@
 
     <!-- Footer -->
     <footer class="py-3 text-center text-muted">
-        <div class="container">
-            <small>Library Management System &bull; Sprint 1 Foundation &bull; MCA Minor Project</small>
+        <div class="container d-flex justify-content-between align-items-center">
+            <small>Library Management System &bull; MCA Minor Project</small>
+            <span class="badge bg-primary">Sprint 2: Core Circulation &amp; Rules</span>
         </div>
     </footer>
 

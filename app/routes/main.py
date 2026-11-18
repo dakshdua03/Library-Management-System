@@ -1,5 +1,6 @@
+from datetime import datetime, date
 from flask import Blueprint, render_template, session, send_from_directory, current_app, redirect, url_for
-from app.models import Patron, BookTitle, BookCopy, BorrowingRules
+from app.models import Patron, BookTitle, BookCopy, BorrowingRules, BorrowTransaction
 from app.auth_helpers import login_required
 
 main_bp = Blueprint('main', __name__)
@@ -22,10 +23,15 @@ def dashboard():
     stats = {
         'total_titles': BookTitle.query.count(),
         'total_copies': BookCopy.query.count(),
-        'total_patrons': Patron.query.count()
+        'total_patrons': Patron.query.count(),
+        'active_loans': BorrowTransaction.query.filter_by(status='Active').count()
     }
 
-    return render_template('dashboard.html', patron=patron, rules=rules, stats=stats)
+    # Fetch patron's active loans if student/faculty
+    my_active_loans = BorrowTransaction.query.filter_by(patron_id=patron.id, status='Active').all()
+
+    now_date = date.today().strftime('%Y-%m-%d')
+    return render_template('dashboard.html', patron=patron, rules=rules, stats=stats, my_loans=my_active_loans, now_date=now_date)
 
 @main_bp.route('/media/<path:filename>')
 def uploaded_media(filename):
