@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}Book Catalog - LMS{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-1">Library Catalog Inventory</h3>
+        <p class="text-muted mb-0">Browse titles, check copy availability on shelves, and track accession numbers.</p>
+    </div>
+    {% if session.get('user_role') in ['Admin', 'Librarian'] %}
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('catalog.add_by_isbn') }}" class="btn btn-primary">
+            <i class="bi bi-upc-scan me-1"></i> Add via ISBN
+        </a>
+        <a href="{{ url_for('catalog.manual_add_title') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-pencil-square me-1"></i> Manual Entry
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-white py-3">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" id="catalogSearch" class="form-control" placeholder="Search by title, author, ISBN, or category...">
+                </div>
+            </div>
+            <div class="col-md-6 text-md-end text-muted small">
+                Total Titles: <strong>{{ titles|length }}</strong>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="catalogTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 70px;">Cover</th>
+                        <th>ISBN</th>
+                        <th>Book Title & Details</th>
+                        <th>Category</th>
+                        <th>Copies (Avail / Total)</th>
+                        <th>Shelving Locations</th>
+                        {% if session.get('user_role') in ['Admin', 'Librarian'] %}
+                        <th>Action</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in titles %}
+                    <tr>
+                        <td>
+                            {% if t.cover_path %}
+                            <img src="{{ url_for('main.uploaded_media', filename=t.cover_path) }}" class="book-cover-thumb" alt="{{ t.title }}">
+                            {% else %}
+                            <div class="book-cover-thumb bg-secondary text-white d-flex align-items-center justify-content-center small text-center p-1">
+                                <i class="bi bi-book"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-dark font-monospace">{{ t.isbn }}</span></td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ t.title }}</div>
+                            <div class="small text-muted">
+                                By {{ t.authors or 'Unknown' }} &bull; {{ t.publisher or 'N/A' }} ({{ t.year or 'N/A' }})
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ t.category or 'General' }}</span></td>
+                        <td>
+                            {% set avail = t.available_copies %}
+                            {% set total = t.total_copies %}
+                            <span class="badge {% if avail > 0 %}bg-success{% else %}bg-danger{% endif %} fs-6">
+                                {{ avail }} / {{ total }} Available
+                            </span>
+                        </td>
+                        <td>
+                            <div class="small text-secondary">
+                                {% for c in t.copies %}
+                                <span class="badge bg-info-subtle text-dark border me-1 mb-1" title="Accession: {{ c.accession_no }} ({{ c.status }})">
+                                    {{ c.accession_no }}: Rack {{ c.rack_no or '-' }}, Sh {{ c.shelf_no or '-' }}
+                                </span>
+                                {% else %}
+                                <em class="text-muted">No copies registered yet</em>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        {% if session.get('user_role') in ['Admin', 'Librarian'] %}
+                        <td>
+                            <a href="{{ url_for('catalog.add_copy', isbn=t.isbn) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-plus-circle me-1"></i> Add Copy
+                            </a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            No books added to the catalog yet. Click <strong>"Add via ISBN"</strong> above to start cataloging!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('catalogSearch').addEventListener('keyup', function() {
+    let q = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#catalogTable tbody tr');
+    rows.forEach(r => {
+        let text = r.innerText.toLowerCase();
+        r.style.display = text.includes(q) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}

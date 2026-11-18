@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - LMS{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold text-dark">Welcome back, {{ patron.name }}!</h2>
+        <p class="text-muted mb-0">Role: <span class="badge bg-primary">{{ patron.role }}</span> &bull; Dept: {{ patron.department or 'N/A' }} &bull; Roll: {{ patron.roll_number }}</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <span class="badge {{ 'bg-success' if patron.is_active else 'bg-danger' }} p-2">
+            <i class="bi {{ 'bi-check-circle-fill' if patron.is_active else 'bi-x-circle-fill' }}"></i>
+            Account {{ 'Active' if patron.is_active else 'Deactivated' }}
+        </span>
+    </div>
+</div>
+
+<!-- Overview Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card p-3 border-start border-primary border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Catalog Titles</h6>
+                    <h3 class="fw-bold mb-0 text-primary">{{ stats.total_titles }}</h3>
+                </div>
+                <div class="fs-1 text-primary opacity-50"><i class="bi bi-book"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3 border-start border-success border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Total Physical Copies</h6>
+                    <h3 class="fw-bold mb-0 text-success">{{ stats.total_copies }}</h3>
+                </div>
+                <div class="fs-1 text-success opacity-50"><i class="bi bi-collection"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3 border-start border-info border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-1">Registered Patrons</h6>
+                    <h3 class="fw-bold mb-0 text-info">{{ stats.total_patrons }}</h3>
+                </div>
+                <div class="fs-1 text-info opacity-50"><i class="bi bi-people"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Role-Specific Action Panels -->
+{% if patron.role == 'Admin' %}
+<div class="card mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-shield-shaded text-danger me-2"></i>Admin Quick Actions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a href="{{ url_for('patrons.add_patron') }}" class="btn btn-outline-primary w-100 p-3 text-start">
+                    <i class="bi bi-person-plus-fill fs-4 d-block mb-2"></i>
+                    <strong>Register Patron</strong>
+                    <div class="small text-muted">Add new student, staff, or faculty</div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('patrons.list_patrons') }}" class="btn btn-outline-info w-100 p-3 text-start">
+                    <i class="bi bi-people-fill fs-4 d-block mb-2"></i>
+                    <strong>Manage Patrons</strong>
+                    <div class="small text-muted">View, search, or toggle active status</div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('patrons.borrowing_rules') }}" class="btn btn-outline-warning w-100 p-3 text-start text-dark">
+                    <i class="bi bi-sliders fs-4 d-block mb-2 text-warning"></i>
+                    <strong>Borrowing Rules</strong>
+                    <div class="small text-muted">Configure limits, loan days & fines</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if patron.role in ['Admin', 'Librarian'] %}
+<div class="card mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-journal-bookmark-fill text-warning me-2"></i>Cataloging Desk</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <a href="{{ url_for('catalog.add_by_isbn') }}" class="btn btn-outline-success w-100 p-3 text-start">
+                    <i class="bi bi-upc-scan fs-4 d-block mb-2"></i>
+                    <strong>Add Book via ISBN Auto-Fetch</strong>
+                    <div class="small text-muted">Auto-retrieves metadata & cover from OpenLibrary / Google Books</div>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ url_for('catalog.manual_add_title') }}" class="btn btn-outline-secondary w-100 p-3 text-start">
+                    <i class="bi bi-pencil-square fs-4 d-block mb-2"></i>
+                    <strong>Manual Book Registration</strong>
+                    <div class="small text-muted">Offline entry fallback when external APIs fail</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Borrowing Rules Matrix Display -->
+<div class="card">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-info-circle-fill text-primary me-2"></i>Current Library Borrowing Policies</h5>
+        {% if patron.role == 'Admin' %}
+        <a href="{{ url_for('patrons.borrowing_rules') }}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i>Edit Rules
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Patron Role</th>
+                        <th>Max Books Allowed</th>
+                        <th>Loan Duration</th>
+                        <th>Max Renewals</th>
+                        <th>Daily Fine Rate</th>
+                        <th>Max Fine Cap</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in rules %}
+                    <tr {% if patron.role == r.role %}class="table-warning fw-semibold"{% endif %}>
+                        <td><span class="badge bg-secondary">{{ r.role }}</span></td>
+                        <td>{{ r.max_books_allowed }} books</td>
+                        <td>{{ r.loan_duration_days }} days</td>
+                        <td>{{ r.max_renewals }} times</td>
+                        <td>Rs. {{ "%.2f"|format(r.fine_per_day) }} / day</td>
+                        <td>Rs. {{ "%.2f"|format(r.max_fine_cap) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

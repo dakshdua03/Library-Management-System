@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% block title %}Add Book by ISBN - LMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold text-dark mb-1"><i class="bi bi-upc-scan text-primary me-2"></i>Catalog Book via ISBN Auto-Fetch</h3>
+                    <p class="text-muted mb-0">Fetches metadata and downloads cover images from OpenLibrary &amp; Google Books APIs.</p>
+                </div>
+                <a href="{{ url_for('catalog.list_books') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Catalog List
+                </a>
+            </div>
+
+            <!-- ISBN Lookup Section -->
+            <div class="bg-light p-3 rounded mb-4 border">
+                <label class="form-label fw-bold">Step 1: Enter ISBN (10 or 13 digits)</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-upc"></i></span>
+                    <input type="text" id="isbn_input" class="form-control form-control-lg font-monospace" placeholder="e.g. 9780133943030 (Sommerville SE) or 9780132350884 (Clean Code)" autofocus>
+                    <button class="btn btn-primary px-4" type="button" id="btn_fetch" onclick="fetchMetadata()">
+                        <span id="fetch_spinner" class="spinner-border spinner-border-sm me-1 d-none"></span>
+                        <i class="bi bi-cloud-arrow-down me-1" id="fetch_icon"></i> Auto-Fetch Metadata
+                    </button>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <small class="text-muted">Supports hyphens or clean digits.</small>
+                    <div id="api_status" class="small fw-semibold"></div>
+                </div>
+            </div>
+
+            <!-- Auto-populated / Confirmation Form -->
+            <form method="POST" action="{{ url_for('catalog.add_by_isbn') }}">
+                <input type="hidden" name="cover_url" id="cover_url_field">
+
+                <h5 class="fw-bold text-secondary mb-3">Step 2: Confirm Book Metadata</h5>
+
+                <div class="row g-3">
+                    <div class="col-md-4 text-center">
+                        <div class="p-2 border rounded bg-white" style="min-height: 220px;">
+                            <label class="form-label small text-muted fw-bold d-block">Cover Image Preview</label>
+                            <img id="cover_preview" src="" alt="Cover Preview" class="img-fluid rounded d-none" style="max-height: 190px;">
+                            <div id="no_cover_placeholder" class="py-5 text-muted">
+                                <i class="bi bi-image fs-1 d-block"></i>
+                                <span class="small">Cover will appear here</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Book Title <span class="text-danger">*</span></label>
+                            <input type="text" name="title" id="title_field" class="form-control" required placeholder="Book title...">
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">ISBN</label>
+                                <input type="text" name="isbn" id="isbn_field" class="form-control font-monospace" readonly required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Category / Genre</label>
+                                <input type="text" name="category" id="category_field" class="form-control" placeholder="Computer Science, Software Eng...">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Author(s)</label>
+                            <input type="text" name="authors" id="authors_field" class="form-control" placeholder="Author names...">
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold">Publisher</label>
+                                <input type="text" name="publisher" id="publisher_field" class="form-control" placeholder="Publisher name...">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Publication Year</label>
+                                <input type="number" name="year" id="year_field" class="form-control" placeholder="e.g. 2011">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Physical Copy Details (Sequence Diagram 5 Step 7) -->
+                <h5 class="fw-bold text-secondary mb-3">Step 3: Initial Physical Copy Setup</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Accession Number <span class="text-danger">*</span></label>
+                        <input type="text" name="accession_no" id="accession_no" class="form-control font-monospace" placeholder="e.g. ACC-1001" required>
+                        <div class="form-text">Unique barcode/ID for this physical book copy.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Rack Location</label>
+                        <input type="text" name="rack_no" class="form-control" placeholder="e.g. Rack B2">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Shelf Location</label>
+                        <input type="text" name="shelf_no" class="form-control" placeholder="e.g. Shelf 3">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <a href="{{ url_for('catalog.manual_add_title') }}" class="text-muted small">
+                        <i class="bi bi-question-circle me-1"></i>APIs failing or offline? Click here for Manual Entry fallback.
+                    </a>
+                    <button type="submit" class="btn btn-success px-4" id="btn_save" disabled>
+                        <i class="bi bi-check-circle me-1"></i> Save to Library Catalog
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function fetchMetadata() {
+    const rawIsbn = document.getElementById('isbn_input').value.trim();
+    if (!rawIsbn) {
+        alert('Please enter an ISBN number.');
+        return;
+    }
+
+    const spinner = document.getElementById('fetch_spinner');
+    const icon = document.getElementById('fetch_icon');
+    const statusDiv = document.getElementById('api_status');
+    const saveBtn = document.getElementById('btn_save');
+
+    spinner.classList.remove('d-none');
+    icon.classList.add('d-none');
+    statusDiv.innerHTML = '<span class="text-primary"><i class="bi bi-arrow-repeat"></i> Contacting OpenLibrary / Google Books...</span>';
+
+    try {
+        const response = await fetch(`{{ url_for('catalog.api_fetch_isbn') }}?isbn=${encodeURIComponent(rawIsbn)}`);
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('isbn_field').value = data.isbn;
+            document.getElementById('title_field').value = data.title || '';
+            document.getElementById('authors_field').value = data.authors || '';
+            document.getElementById('publisher_field').value = data.publisher || '';
+            document.getElementById('year_field').value = data.year || '';
+            document.getElementById('category_field').value = data.category || 'General';
+            document.getElementById('cover_url_field').value = data.cover_url || '';
+
+            // Auto-generate suggested accession number if empty
+            if (!document.getElementById('accession_no').value) {
+                document.getElementById('accession_no').value = 'ACC-' + Math.floor(1000 + Math.random() * 9000);
+            }
+
+            // Cover preview
+            const coverPreview = document.getElementById('cover_preview');
+            const placeholder = document.getElementById('no_cover_placeholder');
+            if (data.cover_url) {
+                coverPreview.src = data.cover_url;
+                coverPreview.classList.remove('d-none');
+                placeholder.classList.add('d-none');
+            } else {
+                coverPreview.classList.add('d-none');
+                placeholder.classList.remove('d-none');
+            }
+
+            statusDiv.innerHTML = `<span class="text-success"><i class="bi bi-check-circle-fill"></i> Found via ${data.source}!</span>`;
+            saveBtn.disabled = false;
+        } else {
+            statusDiv.innerHTML = `<span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> ${data.error || 'Book not found in external APIs.'}</span>`;
+            // Enable manual entry with the typed ISBN
+            document.getElementById('isbn_field').value = rawIsbn.replace(/[^0-9X]/gi, '');
+            saveBtn.disabled = false;
+        }
+    } catch (err) {
+        statusDiv.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle-fill"></i> Network error connecting to lookup service.</span>';
+    } finally {
+        spinner.classList.add('d-none');
+        icon.classList.remove('d-none');
+    }
+}
+</script>
+{% endblock %}

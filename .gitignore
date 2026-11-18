@@ -1,0 +1,18 @@
+# Virtual environment
+venv/
+*.pyc
+__pycache__/
+instance/
+.pytest_cache/
+
+# SQLite database file (created automatically on startup)
+*.db
+*.sqlite3
+
+# Uploaded media (keep folder structure, exclude large demo binaries)
+media/covers/*.jpg
+media/covers/*.png
+media/photos/*.jpg
+media/photos/*.png
+!media/covers/.gitkeep
+!media/photos/.gitkeep
