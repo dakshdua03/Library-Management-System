@@ -1,5 +1,6 @@
+from datetime import date
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
-from app.models import Patron, BookCopy, BookTitle, BorrowTransaction
+from app.models import db, Patron, BookCopy, BookTitle, BorrowTransaction
 from app.circulation_service import CirculationService
 from app.auth_helpers import login_required, role_required
 
@@ -11,7 +12,8 @@ circulation_bp = Blueprint('circulation', __name__, url_prefix='/circulation')
 def active_loans():
     """Circulation desk overview of all active loans."""
     loans = BorrowTransaction.query.filter_by(status='Active').order_by(BorrowTransaction.issue_date.desc()).all()
-    return render_template('circulation/active_loans.html', loans=loans)
+    now_date = date.today().strftime('%Y-%m-%d')
+    return render_template('circulation/active_loans.html', loans=loans, now_date=now_date)
 
 @circulation_bp.route('/issue', methods=['GET', 'POST'])
 @login_required
