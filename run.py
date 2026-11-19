@@ -31,7 +31,6 @@ def seed_initial_data():
                 Patron(name="Admin Officer", role="Admin", department="Library Administration", roll_number="ADMIN01", email="admin@lms.local", phone="9988776655"),
                 Patron(name="Chief Librarian", role="Librarian", department="Circulation Desk", roll_number="LIB01", email="librarian@lms.local", phone="9988776644"),
                 Patron(name="Daksh Dua", role="Student", department="SCIS - MCA", roll_number="25MCMC21", email="daksh@uohyd.ac.in", phone="9876543210"),
-                Patron(name="Satyabrata Rath", role="Student", department="SCIS - MCA", roll_number="25MCMC36", email="satyabrata@uohyd.ac.in", phone="9876543211"),
                 Patron(name="Dr. Faculty Advisor", role="Faculty", department="SCIS", roll_number="FAC01", email="faculty@uohyd.ac.in", phone="9876543212")
             ]
             db.session.add_all(patrons_data)

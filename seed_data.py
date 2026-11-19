@@ -29,9 +29,8 @@ def seed_rich_dataset():
             {"name": "Chief Librarian", "role": "Librarian", "department": "Circulation Desk", "roll_number": "LIB01", "email": "librarian@lms.local", "phone": "9988776644", "is_active": True},
             {"name": "Asst. Librarian Ramesh", "role": "Librarian", "department": "Circulation Desk", "roll_number": "LIB02", "email": "ramesh.lib@lms.local", "phone": "9988776633", "is_active": True},
             
-            # MCA Students (Daksh & Satyabrata + peers)
+            # MCA Students (Daksh Dua & peers)
             {"name": "Daksh Dua", "role": "Student", "department": "SCIS - MCA", "roll_number": "25MCMC21", "email": "daksh@uohyd.ac.in", "phone": "9876543210", "is_active": True},
-            {"name": "Satyabrata Rath", "role": "Student", "department": "SCIS - MCA", "roll_number": "25MCMC36", "email": "satyabrata@uohyd.ac.in", "phone": "9876543211", "is_active": True},
             {"name": "Aarav Sharma", "role": "Student", "department": "SCIS - MCA", "roll_number": "25MCMC05", "email": "aarav.sharma@uohyd.ac.in", "phone": "9876543213", "is_active": True},
             {"name": "Priya Nair", "role": "Student", "department": "SCIS - M.Tech CS", "roll_number": "25MCTC12", "email": "priya.nair@uohyd.ac.in", "phone": "9876543214", "is_active": True},
             {"name": "Rohan Verma", "role": "Student", "department": "School of Physics", "roll_number": "25PHPH08", "email": "rohan.v@uohyd.ac.in", "phone": "9876543215", "is_active": True},
@@ -264,31 +263,31 @@ def seed_rich_dataset():
             p_rohan.fine_balance = 12.0
             db.session.add(fine1)
 
-            # Active loan 4: Satyabrata has CLRS Algorithms (ACC-301)
+            # Active loan 4: Priya has CLRS Algorithms (ACC-301)
             c301 = BookCopy.query.get("ACC-301")
             c301.status = 'Issued'
             tx4 = BorrowTransaction(
-                patron_id=p_satya.id,
+                patron_id=p_priya.id,
                 accession_no="ACC-301",
                 issue_date=now - timedelta(days=7),
                 due_date=now + timedelta(days=7),
                 status='Active',
                 renewal_count=1
             )
-            p_satya.current_borrowed_count = 1
+            p_priya.current_borrowed_count = 1
 
-            # Active loan 5: Priya has Deep Learning (ACC-1001)
+            # Active loan 5: Rohan has Deep Learning (ACC-1001)
             c1001 = BookCopy.query.get("ACC-1001")
             c1001.status = 'Issued'
             tx5 = BorrowTransaction(
-                patron_id=p_priya.id,
+                patron_id=p_rohan.id,
                 accession_no="ACC-1001",
                 issue_date=now - timedelta(days=3),
                 due_date=now + timedelta(days=11),
                 status='Active',
                 renewal_count=0
             )
-            p_priya.current_borrowed_count = 1
+            p_rohan.current_borrowed_count += 1
 
             # Active loan 6 (OVERDUE for demo report): Aarav has Effective Java (ACC-901) - only 1 copy and issued!
             c901 = BookCopy.query.get("ACC-901")
@@ -309,18 +308,18 @@ def seed_rich_dataset():
             # Historical completed returns (for Popular Books report)
             past_txs = [
                 BorrowTransaction(patron_id=p_fac1.id, accession_no="ACC-102", issue_date=now - timedelta(days=40), due_date=now - timedelta(days=10), return_date=now - timedelta(days=11), status='Returned'),
-                BorrowTransaction(patron_id=p_satya.id, accession_no="ACC-103", issue_date=now - timedelta(days=35), due_date=now - timedelta(days=21), return_date=now - timedelta(days=20), status='Returned'),
-                BorrowTransaction(patron_id=p_daksh.id, accession_no="ACC-302", issue_date=now - timedelta(days=25), due_date=now - timedelta(days=11), return_date=now - timedelta(days=12), status='Returned'),
-                BorrowTransaction(patron_id=p_priya.id, accession_no="ACC-401", issue_date=now - timedelta(days=30), due_date=now - timedelta(days=16), return_date=now - timedelta(days=15), status='Returned'),
-                BorrowTransaction(patron_id=p_aarav.id, accession_no="ACC-501", issue_date=now - timedelta(days=28), due_date=now - timedelta(days=14), return_date=now - timedelta(days=14), status='Returned'),
+                BorrowTransaction(patron_id=p_daksh.id, accession_no="ACC-103", issue_date=now - timedelta(days=35), due_date=now - timedelta(days=21), return_date=now - timedelta(days=20), status='Returned'),
+                BorrowTransaction(patron_id=p_priya.id, accession_no="ACC-302", issue_date=now - timedelta(days=25), due_date=now - timedelta(days=11), return_date=now - timedelta(days=12), status='Returned'),
+                BorrowTransaction(patron_id=p_aarav.id, accession_no="ACC-401", issue_date=now - timedelta(days=30), due_date=now - timedelta(days=16), return_date=now - timedelta(days=15), status='Returned'),
+                BorrowTransaction(patron_id=p_daksh.id, accession_no="ACC-501", issue_date=now - timedelta(days=28), due_date=now - timedelta(days=14), return_date=now - timedelta(days=14), status='Returned'),
             ]
 
             db.session.add_all([tx1, tx2, tx3, tx4, tx5, tx6] + past_txs)
 
             # 5. Waitlist Reservations (For Effective Java ISBN 9780134685991 where 0/1 copies available)
-            # Satyabrata is Queue #1, Daksh is Queue #2
+            # Priya is Queue #1, Daksh is Queue #2
             res1 = Reservation(
-                patron_id=p_satya.id,
+                patron_id=p_priya.id,
                 isbn="9780134685991",
                 request_date=now - timedelta(days=2),
                 queue_position=1,
