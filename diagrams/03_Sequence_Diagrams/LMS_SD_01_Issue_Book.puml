@@ -1,0 +1,73 @@
+@startuml LMS_SD_01_Issue_Book
+title Sequence Diagram 1: Issue Book
+
+autonumber
+skinparam sequence {
+  ParticipantBackgroundColor #FFF9C4
+  ParticipantBorderColor DarkRed
+  LifeLineBackgroundColor white
+  ArrowColor DarkBlue
+  ActorBorderColor black
+  ActorBackgroundColor #E3F2FD
+}
+
+actor ":Librarian" as Lib
+participant ":IssueForm" as Form
+participant ":IssueCntrlr" as Ctrl
+participant ":BookCopy" as Copy
+participant ":Patron" as Patron
+participant ":BorrowingRules" as Rules
+participant ":BorrowTransaction" as Transact
+
+Lib -> Form : fillForm(studentId, accessionNo)
+activate Form
+
+Form -> Ctrl : submit()
+activate Ctrl
+
+Ctrl -> Copy : verifyAvailability()
+activate Copy
+Copy --> Ctrl : copyAvailable / unavailable
+deactivate Copy
+
+alt Copy Unavailable
+  Ctrl --> Form : displayError("Offer Reservation")
+else Copy Available
+  Ctrl -> Patron : checkEligibility()
+  activate Patron
+
+  Patron -> Rules : validateLimit()
+  activate Rules
+  Rules --> Patron : limitValid
+  deactivate Rules
+
+  Patron --> Ctrl : eligible / ineligible
+  deactivate Patron
+
+  alt Patron Ineligible
+    Ctrl --> Form : displayError("Issue Blocked")
+  else Patron Eligible
+    Ctrl -> Transact : calculateDueDate()
+    activate Transact
+    Transact --> Ctrl : dueDate
+    deactivate Transact
+
+    Ctrl -> Transact : recordIssue()
+    activate Transact
+    Transact --> Ctrl : borrowId (status=Active)
+    deactivate Transact
+
+    Ctrl -> Copy : updateAvailability(status=Issued)
+    activate Copy
+    Copy --> Ctrl : confirmation
+    deactivate Copy
+
+    Ctrl --> Form : showConfirmation(dueDate)
+    Form --> Lib : printReceipt()
+  end
+end
+
+deactivate Ctrl
+deactivate Form
+
+@enduml

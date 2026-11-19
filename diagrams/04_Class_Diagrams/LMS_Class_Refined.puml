@@ -1,0 +1,96 @@
+@startuml LMS_Class_Refined
+' Refined Class Diagram for Library - analog of Fig 3.21 Banking
+skinparam class {
+  BackgroundColor #FFF9C4
+  BorderColor Black
+  ArrowColor #4D4D4D
+}
+
+class Patron {
+  - studentId : String
+  - name : String
+  - email : String
+  - role : String
+  - status : String
+  - currentBorrowedCount : int
+  - fineBalance : decimal
+  + checkEligibility() : boolean
+  + verifyIssuePrvlg()
+  + verifyRenewPrvlg()
+  + verifyReservePrvlg()
+  + deactivate()
+}
+
+class BorrowingRules {
+  - role : String
+  - maxBooksAllowed : int
+  - loanDurationDays : int
+  - maxRenewals : int
+  - finePerDay : decimal
+  - maxFineCap : decimal
+  + validateLimit() : boolean
+  + computeFine() : decimal
+}
+
+class BookTitle {
+  - ISBN : String
+  - title : String
+  - authors : String
+  - publisher : String
+  - year : int
+  - category : String
+  - coverPath : String
+  + fetchDetailsFromApi()
+  + getAvailabilityStatus()
+}
+
+class BookCopy {
+  - accessionNo : String
+  - rackNo : String
+  - shelfNo : String
+  - status : String
+  + verifyAvailability() : boolean
+  + updateAvailability()
+}
+
+class BorrowTransaction {
+  - borrowId : int
+  - issueDate : Date
+  - dueDate : Date
+  - returnDate : Date
+  - renewalCount : int
+  - status : String
+  + calculateDueDate()
+  + recordIssue()
+  + recordReturn()
+  + renew()
+  + isOverdue()
+}
+
+class Reservation {
+  - reservationId : int
+  - requestDate : timestamp
+  - queuePosition : int
+  - status : String
+  + cancel()
+  + notifyPatron()
+  + updateQueuePosition()
+}
+
+class Fine {
+  - fineId : int
+  - daysOverdue : int
+  - amount : decimal
+  - paidStatus : String
+  + calculateAmount()
+  + markAsPaid()
+}
+
+Patron "1" -- "0..*" BorrowTransaction : Performs >
+Patron "1" -- "0..*" Reservation : Holds >
+BookTitle "1" -- "0..*" BookCopy : Contains >
+BookCopy "1" -- "0..*" BorrowTransaction : InvolvedIn >
+BookTitle "1" -- "0..*" Reservation : WaitlistedBy >
+BorrowTransaction "1" -- "0..1" Fine : Incurs >
+BorrowingRules "1" ..> "0..*" Patron : Governs >
+@enduml

@@ -1,0 +1,27 @@
+@startuml LMS_CD_03_Renew_Book
+' Collaboration Diagram 3: Renew Book (Numbered Object Message Flow)
+title Collaboration (Communication) Diagram 3: Renew Book
+
+skinparam defaultTextAlignment center
+skinparam rectangle {
+  BackgroundColor #FFF9C4
+  BorderColor #8B0000
+  RoundCorner 8
+}
+skinparam actor {
+  BackgroundColor #E3F2FD
+  BorderColor black
+}
+
+actor ":Patron" as Patron
+rectangle ":RenewForm" as Form
+rectangle ":RenewCntrlr" as Ctrl
+rectangle ":Reservation" as Res
+rectangle ":BorrowTransaction" as Transact
+
+Patron -right- Form : 1: fillForm()\n7: displayUpdatedDueCard() >
+Form -right- Ctrl : 2: submit() >
+Ctrl -down- Res : 3: verifyNoHold() >
+Ctrl -right- Transact : 4: verifyRenewEligibility()\n5: extendDueDate()\n6: updateRenewCount() >
+
+@enduml

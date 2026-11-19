@@ -1,0 +1,23 @@
+@startuml LMS_Sequence_Issue
+title Issue Book (Detailed Simple)
+skinparam sequence {
+  ParticipantBackgroundColor #FFF9C4
+  ParticipantBorderColor DarkRed
+}
+actor ":Librarian" as Lib
+participant ":IssueForm" as F
+participant ":IssueCntrlr" as C
+participant ":BookCopy" as B
+participant ":Patron" as P
+participant ":BorrowTransaction" as T
+participant ":BorrowingRules" as R
+
+Lib -> F : 1 : fillForm()
+F -> C : 2 : submit()
+C -> B : 3 : verifyAvailability()
+C -> P : 4 : checkEligibility()
+P -> R : 4.1 : validateLimit()
+C -> T : 5 : calculateDueDate()
+C -> T : 6 : recordIssue()
+C -> B : 7 : updateAvailability()
+@enduml

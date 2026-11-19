@@ -1,0 +1,21 @@
+@startuml LMS_Issue_Sequence
+title Issue Book (Simple)
+skinparam sequence {
+  ParticipantBackgroundColor LightYellow
+  ParticipantBorderColor DarkRed
+  LifeLineBackgroundColor white
+}
+actor " : Librarian" as Teller
+participant ": IssueForm" as IssueForm
+participant ": IssueCntrlr" as IssueCntrlr
+participant ": Book" as Book
+participant ": Patron" as Patron
+participant ": BorrowingRecord" as Transact
+
+Teller -> IssueForm : 1 : fillForm()
+IssueForm -> IssueCntrlr : 2 : submit()
+IssueCntrlr -> Book : 3 : verifyBookAvailability()
+IssueCntrlr -> Patron : 4 : verifyIssuePrvlg()
+IssueCntrlr -> Transact : 5 : recordIssueDetails()
+IssueCntrlr -> Book : 6 : updateAvailability()
+@enduml

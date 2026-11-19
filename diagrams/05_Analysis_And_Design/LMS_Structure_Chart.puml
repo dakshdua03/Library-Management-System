@@ -1,0 +1,73 @@
+@startuml LMS_Structure_Chart
+title Structure Chart: Hierarchical Module Architecture
+
+skinparam rectangle {
+  BorderColor #222222
+  RoundCorner 4
+}
+skinparam defaultTextAlignment center
+
+rectangle "0.0 LMS Main Controller\n(Executive Module)" as Root #E3F2FD
+
+rectangle "1.0 Manage Catalog" as M1 #FFF9C4
+rectangle "2.0 Manage Patrons" as M2 #FFF9C4
+rectangle "3.0 Process Circulation\n(Transaction Center)" as M3 #FFF9C4
+rectangle "4.0 Self-Service / Search" as M4 #FFF9C4
+rectangle "5.0 Reports & Alerts" as M5 #FFF9C4
+
+Root -down-> M1
+Root -down-> M2
+Root -down-> M3
+Root -down-> M4
+Root -down-> M5
+
+rectangle "3.1 Issue Book" as M3_1 #E8F5E9
+rectangle "3.2 Return Book" as M3_2 #E8F5E9
+rectangle "3.3 Renew Book" as M3_3 #E8F5E9
+
+M3 -down-> M3_1
+M3 -down-> M3_2
+M3 -down-> M3_3
+
+rectangle "3.1.1 Get Validated Input" as M3_1_1 #FFFFFF
+rectangle "3.1.2 Verify 5-Point Rules" as M3_1_2 #FFFFFF
+rectangle "3.1.3 Record Atomic Loan" as M3_1_3 #FFFFFF
+rectangle "3.1.4 Produce Due Card" as M3_1_4 #FFFFFF
+
+M3_1 -down-> M3_1_1
+M3_1 -down-> M3_1_2
+M3_1 -down-> M3_1_3
+M3_1 -down-> M3_1_4
+
+rectangle "3.2.1 Get Return Accession" as M3_2_1 #FFFFFF
+rectangle "3.2.2 Calculate Fine" as M3_2_2 #FFFFFF
+rectangle "3.2.3 Update Copy Status" as M3_2_3 #FFFFFF
+rectangle "3.2.4 Trigger 48-hr Hold" as M3_2_4 #FFFFFF
+
+M3_2 -down-> M3_2_1
+M3_2 -down-> M3_2_2
+M3_2 -down-> M3_2_3
+M3_2 -down-> M3_2_4
+
+rectangle "1.1 Fetch ISBN API" as M1_1 #FFFFFF
+rectangle "1.2 Manual Entry Fallback" as M1_2 #FFFFFF
+rectangle "1.3 Bulk CSV Parser" as M1_3 #FFFFFF
+
+M1 -down-> M1_1
+M1 -down-> M1_2
+M1 -down-> M1_3
+
+rectangle "5.1 Overdue CSV Exporter" as M5_1 #FFFFFF
+rectangle "5.2 Top-20 Popular" as M5_2 #FFFFFF
+rectangle "5.3 Cron Email Notifier" as M5_3 #FFFFFF
+
+M5 -down-> M5_1
+M5 -down-> M5_2
+M5 -down-> M5_3
+
+note right of Root
+  High functional cohesion per module;
+  low data coupling via standard records.
+end note
+
+@enduml

@@ -1,0 +1,58 @@
+@startuml LMS_SD_04_Reserve_Book
+title Sequence Diagram 4: Reserve Book
+
+autonumber
+skinparam sequence {
+  ParticipantBackgroundColor #FFF9C4
+  ParticipantBorderColor DarkRed
+  LifeLineBackgroundColor white
+  ArrowColor DarkBlue
+  ActorBorderColor black
+  ActorBackgroundColor #E3F2FD
+}
+
+actor ":Patron" as Patron
+participant ":SearchPage" as Page
+participant ":ReserveCntrlr" as Ctrl
+participant ":BookCopy" as Copy
+participant ":Reservation" as Res
+
+Patron -> Page : search(query)
+activate Page
+Page --> Patron : showBookDetails(availability)
+
+Patron -> Page : submitReserve()
+
+Page -> Ctrl : reserveRequest()
+activate Ctrl
+
+Ctrl -> Copy : verifyUnavailability()
+activate Copy
+Copy --> Ctrl : availableCopiesCount
+deactivate Copy
+
+alt Available Copies > 0
+  Ctrl --> Page : displayError("Book available. No reservation needed.")
+else Available Copies == 0
+  Ctrl -> Res : verifyNoDuplicate()
+  activate Res
+  Res --> Ctrl : isAlreadyReserved
+  deactivate Res
+
+  alt Already Reserved
+    Ctrl --> Page : displayError("Active reservation already exists.")
+  else Valid New Reservation
+    Ctrl -> Res : recordReservation(FCFS)
+    activate Res
+    Res --> Ctrl : reservationRecord (Queue Position)
+    deactivate Res
+
+    Ctrl --> Page : showQueuePosition()
+    Page --> Patron : renderReceipt(#N in queue)
+  end
+end
+
+deactivate Ctrl
+deactivate Page
+
+@enduml

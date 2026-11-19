@@ -1,0 +1,41 @@
+@startuml LMS_Transform_Analysis
+title Transform Analysis: DFD to Structure Chart
+
+skinparam rectangle {
+  BorderColor #222222
+  RoundCorner 6
+}
+skinparam defaultTextAlignment center
+
+package "Afferent Branch (Input)" {
+  rectangle "Enter Issue Data\n(Patron ID & Accession No.)" as INP1 #E3F2FD
+  rectangle "Validate Input\n(Format & Sanitization)" as INP2 #E3F2FD
+  rectangle "Fetch Entity Profiles\n(Patron & Copy Records)" as INP3 #E3F2FD
+}
+
+package "Transform Center" {
+  rectangle "TRANSFORM CENTER\nVerify Business Rules\n\n• Patron Active Status\n• Role Quota Check\n• Fine Balance Check\n• Copy Availability\n• Calculate Due Date" as TC #FFF9C4
+}
+
+package "Efferent Branch (Output)" {
+  rectangle "Commit Atomic Loan\n(Create Transaction & Mark Issued)" as OUT1 #E8F5E9
+  rectangle "Format Receipt\n(Due Card & Confirmation)" as OUT2 #E8F5E9
+  rectangle "Render / Print Receipt\n(Display to Librarian)" as OUT3 #E8F5E9
+}
+
+INP1 -right-> INP2 : Raw Input
+INP2 -right-> INP3 : Cleaned IDs
+INP3 -right-> TC : Validated Entities
+
+TC -right-> OUT1 : Approved Loan Terms
+OUT1 -right-> OUT2 : Committed Record
+OUT2 -right-> OUT3 : Formatted Receipt
+
+note bottom of TC
+  **Transform Analysis:**
+  Identifies Afferent Boundary (input ceases)
+  and Efferent Boundary (output begins).
+  Central operations form top-level modules.
+end note
+
+@enduml

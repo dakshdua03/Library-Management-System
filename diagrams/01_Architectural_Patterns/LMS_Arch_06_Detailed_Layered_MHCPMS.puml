@@ -1,0 +1,42 @@
+@startuml LMS_Arch_06_Detailed_Layered_MHCPMS
+title Architecture 6: Detailed 4-Layer Architecture (MHC-PMS Analog)
+
+skinparam rectangle {
+  BorderColor #222222
+  RoundCorner 6
+}
+skinparam defaultTextAlignment center
+
+rectangle "Layer 4: User Interface\nWeb Browser (Librarian & Student / Faculty / Staff Portal)" as L4 #E3F2FD
+
+rectangle "Layer 3: UI & Security Services" as L3_Box #E8F5E9 {
+  rectangle "Authentication & Login" as L3_1 #FFFFFF
+  rectangle "Role-Based Access Control\n(Student / Faculty / Staff / Admin)" as L3_2 #FFFFFF
+  rectangle "Form / Menu Management" as L3_3 #FFFFFF
+  rectangle "Input Validation" as L3_4 #FFFFFF
+}
+
+rectangle "Layer 2: Core Business Services" as L2_Box #FFF9C4 {
+  rectangle "Security & CSRF Protection" as L2_1 #FFFFFF
+  rectangle "Catalog & Circulation Manager\n(Issue, Return, Renew, Reserve)" as L2_2 #FFFFFF
+  rectangle "External Data Import / Export\n(API Fetch, CSV Upload/Export)" as L2_3 #FFFFFF
+  rectangle "Reporting & Notification\n(Overdue Report, SMTP Alerts)" as L2_4 #FFFFFF
+}
+
+rectangle "Layer 1: System Infrastructure" as L1_Box #FCE4EC {
+  rectangle "ACID Transaction Management" as L1_1 #FFFFFF
+  rectangle "Relational Library Database (PostgreSQL / SQLite)" as L1_2 #FFFFFF
+}
+
+L4 -down-> L3_Box : User Events / HTTP Requests
+L3_Box -down-> L2_Box : Validated Commands
+L2_Box -down-> L1_Box : DB Operations / Transactions
+
+note right of L2_Box
+  **MHC-PMS Analog:**
+  • Patient Info → Catalog & Circulation
+  • Data Export → External API & CSV
+  • Report Generator → Overdue & Popular
+end note
+
+@enduml

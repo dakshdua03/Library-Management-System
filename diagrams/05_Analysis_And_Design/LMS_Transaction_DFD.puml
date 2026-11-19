@@ -1,0 +1,47 @@
+@startuml LMS_Transaction_DFD
+title Transaction DFD: Transaction Center Dispatch
+
+skinparam roundCorner 8
+skinparam defaultTextAlignment center
+
+actor "Librarian / Patron" as User #E3F2FD
+
+rectangle "0.0 Login & Session Dispatcher\n(Authenticate & Validate Role)" as P0 #EEEEEE
+
+rectangle "1.0 TRANSACTION CENTER\nIdentify Request Type\n[Issue | Return | Renew | Reserve | Catalog | Report]" as TC #FFF9C4
+
+package "Action Branches" {
+  rectangle "2.0 Process Issue" as P_Issue #E8F5E9
+  rectangle "3.0 Process Return" as P_Return #E8F5E9
+  rectangle "4.0 Process Renew" as P_Renew #E8F5E9
+  rectangle "5.0 Process Reservation" as P_Reserve #E8F5E9
+  rectangle "6.0 Process Cataloging" as P_Catalog #E8F5E9
+  rectangle "7.0 Generate Reports" as P_Report #E8F5E9
+}
+
+database "Library Data Stores\n(Titles, Copies, Patrons, Loans, Fines, Holds)" as DB #FCE4EC
+
+User --> P0 : Credentials + Request
+P0 --> TC : Authenticated Transaction
+
+TC --> P_Issue : [ISSUE]
+TC --> P_Return : [RETURN]
+TC --> P_Renew : [RENEW]
+TC --> P_Reserve : [RESERVE]
+TC --> P_Catalog : [CATALOG]
+TC --> P_Report : [REPORT]
+
+P_Issue <--> DB
+P_Return <--> DB
+P_Renew <--> DB
+P_Reserve <--> DB
+P_Catalog <--> DB
+P_Report <--> DB
+
+note bottom of TC
+  **Transaction Analysis:**
+  Single data stream enters the center,
+  dispatched to independent action branches.
+end note
+
+@enduml

@@ -1,0 +1,31 @@
+@startuml LMS_CD_01_Issue_Book
+' Collaboration Diagram 1: Issue Book (Numbered Object Message Flow)
+title Collaboration (Communication) Diagram 1: Issue Book
+
+skinparam defaultTextAlignment center
+skinparam rectangle {
+  BackgroundColor #FFF9C4
+  BorderColor #8B0000
+  RoundCorner 8
+}
+skinparam actor {
+  BackgroundColor #E3F2FD
+  BorderColor black
+}
+
+actor ":Librarian" as Lib
+rectangle ":IssueForm" as Form
+rectangle ":IssueCntrlr" as Ctrl
+rectangle ":BookCopy" as Copy
+rectangle ":Patron" as Patron
+rectangle ":BorrowingRules" as Rules
+rectangle ":BorrowTransaction" as Transact
+
+Lib -right- Form : 1: fillForm()\n8: printReceiptOrDisplay() >
+Form -right- Ctrl : 2: submit() >
+Ctrl -down- Copy : 3: verifyAvailability()\n7: updateAvailability() >
+Ctrl -right- Patron : 4: checkEligibility() >
+Patron -down- Rules : 4.1: validateLimit() >
+Ctrl -down- Transact : 5: calculateDueDate()\n6: recordIssue() >
+
+@enduml

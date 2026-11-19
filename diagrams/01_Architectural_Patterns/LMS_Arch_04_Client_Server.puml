@@ -1,0 +1,40 @@
+@startuml LMS_Arch_04_Client_Server
+title Architecture 4: Client-Server Architecture
+
+skinparam componentStyle rectangle
+skinparam roundCorner 8
+skinparam defaultTextAlignment center
+
+package "Client Tier (Presentation)" {
+  rectangle "[Librarian Counter]\nDesktop Web Browser" as C_Lib #E3F2FD
+  rectangle "[Student Portal]\nMobile / Laptop Browser" as C_Student #E3F2FD
+  rectangle "[Faculty Portal]\nLaptop / Workstation" as C_Faculty #E3F2FD
+  rectangle "[Admin Client]\nAdmin Web Dashboard" as C_Admin #E3F2FD
+}
+
+rectangle "CAMPUS INTRANET / NETWORK\n(HTTP / HTTPS)" as Network #EEEEEE
+
+package "Server Tier (Services)" {
+  rectangle "[Catalogue Server]\nISBN Metadata & Locator" as S_Catalog #FFF9C4
+  rectangle "[Loan Server]\nCirculation & Renewals" as S_Loan #FFF9C4
+  rectangle "[Patron Server]\nProfiles & Eligibility" as S_Patron #FFF9C4
+  rectangle "[Report Server]\nFines, Exports & Notifications" as S_Web #FFF9C4
+}
+
+C_Lib -down-> Network
+C_Student -down-> Network
+C_Faculty -down-> Network
+C_Admin -down-> Network
+
+Network -down-> S_Catalog
+Network -down-> S_Loan
+Network -down-> S_Patron
+Network -down-> S_Web
+
+note bottom of Network
+  **Client-Server Pattern:**
+  Servers offer independent services;
+  clients invoke via network requests.
+end note
+
+@enduml

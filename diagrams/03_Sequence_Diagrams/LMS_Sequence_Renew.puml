@@ -1,0 +1,19 @@
+@startuml LMS_Sequence_Renew
+title Renew Book (Simple)
+skinparam sequence {
+  ParticipantBackgroundColor #FFF9C4
+  ParticipantBorderColor DarkRed
+}
+actor ":Patron" as P1
+participant ":RenewForm" as RF
+participant ":RenewCntrlr" as RC
+participant ":Reservation" as Res
+participant ":BorrowTransaction" as BT
+
+P1 -> RF : 1 : fillForm()
+RF -> RC : 2 : submit()
+RC -> Res : 3 : verifyNoHold()
+RC -> BT : 4 : verifyRenewEligibility()
+RC -> BT : 5 : extendDueDate()
+RC -> BT : 6 : updateRenewCount()
+@enduml

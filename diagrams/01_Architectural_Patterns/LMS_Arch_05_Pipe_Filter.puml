@@ -1,0 +1,42 @@
+@startuml LMS_Arch_05_Pipe_Filter
+title Architecture 5: Pipe-and-Filter (Circulation & Reminders)
+
+skinparam roundCorner 8
+skinparam defaultTextAlignment center
+
+database "Active Loans\n[Data Store]" as DS_Loans #FCE4EC
+database "Daily Returns\n[Data Store]" as DS_Returns #FCE4EC
+
+rectangle "Read Issued Loans\n(Filter 1)" as F1 #E3F2FD
+rectangle "Identify Returns\n(Filter 2)" as F2 #E3F2FD
+
+rectangle "Identify Overdues & Status\n(Filter / Fork 3)" as F3 #FFF9C4
+
+rectangle "Issue Return Receipts\n& Release Holds\n(Filter 4)" as F4 #E8F5E9
+rectangle "Find Fines Due\n(Filter 5)" as F5 #E8F5E9
+
+rectangle "Issue Overdue Reminder\n(Filter 6)" as F6 #FFE0B2
+
+database "Receipts & Hold Notifications\n[Output]" as DS_Receipts #FCE4EC
+database "Email Dispatch Queue\n[SMTP]" as DS_Mail #FCE4EC
+
+DS_Loans ==> F1 : pipe [Active Loans]
+DS_Returns ==> F2 : pipe [Returned Books]
+
+F1 ==> F3 : pipe [Loan Records]
+F2 ==> F3 : pipe [Return Records]
+
+F3 ==> F4 : pipe [Normal Returns]
+F3 ==> F5 : pipe [Overdue Records]
+
+F4 ==> DS_Receipts : pipe [Receipts]
+F5 ==> F6 : pipe [Fines Calculated]
+F6 ==> DS_Mail : pipe [SMTP Packets]
+
+note bottom of F6
+  **Pipe-and-Filter Pattern:**
+  Stateless filters for daily cron jobs:
+  overdue calc, reminders, hold expiry.
+end note
+
+@enduml

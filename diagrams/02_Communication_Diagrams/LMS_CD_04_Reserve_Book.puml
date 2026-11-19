@@ -1,0 +1,28 @@
+@startuml LMS_CD_04_Reserve_Book
+' Collaboration Diagram 4: Reserve Book (Numbered Object Message Flow)
+title Collaboration (Communication) Diagram 4: Reserve Book
+
+skinparam defaultTextAlignment center
+skinparam rectangle {
+  BackgroundColor #FFF9C4
+  BorderColor #8B0000
+  RoundCorner 8
+}
+skinparam actor {
+  BackgroundColor #E3F2FD
+  BorderColor black
+}
+
+actor ":Patron" as Patron
+rectangle ":SearchPage" as Page
+rectangle ":ReserveCntrlr" as Ctrl
+rectangle ":BookCopy" as Copy
+rectangle ":Reservation" as Res
+
+Patron -right- Page : 1: search()\n2: submitReserve()\n7: renderReservationReceipt() >
+Page -right- Ctrl : 2.1: reserveRequest() >
+Ctrl -down- Copy : 3: verifyUnavailability() >
+Ctrl -right- Res : 4: verifyNoDuplicate()\n5: recordReservation() >
+Ctrl -left- Page : 6: showQueuePosition() >
+
+@enduml

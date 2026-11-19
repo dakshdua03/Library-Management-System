@@ -1,0 +1,31 @@
+@startuml LMS_CD_02_Return_Book
+' Collaboration Diagram 2: Return Book (Numbered Object Message Flow)
+title Collaboration (Communication) Diagram 2: Return Book
+
+skinparam defaultTextAlignment center
+skinparam rectangle {
+  BackgroundColor #FFF9C4
+  BorderColor #8B0000
+  RoundCorner 8
+}
+skinparam actor {
+  BackgroundColor #E3F2FD
+  BorderColor black
+}
+
+actor ":Librarian" as Lib
+rectangle ":ReturnForm" as Form
+rectangle ":ReturnCntrlr" as Ctrl
+rectangle ":BorrowTransaction" as Transact
+rectangle ":Fine" as Fine
+rectangle ":BookCopy" as Copy
+rectangle ":Reservation" as Res
+
+Lib -right- Form : 1: fillForm()\n8: issueReturnReceipt() >
+Form -right- Ctrl : 2: submit() >
+Ctrl -down- Transact : 3: verifyLoan()\n5: recordReturn() >
+Ctrl -right- Fine : 4: computeFine() >
+Ctrl -down- Copy : 6: updateAvailability() >
+Ctrl -left- Res : 7: checkReservationQueue() >
+
+@enduml

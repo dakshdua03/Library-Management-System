@@ -1,0 +1,68 @@
+@startuml LMS_SD_02_Return_Book
+title Sequence Diagram 2: Return Book
+
+autonumber
+skinparam sequence {
+  ParticipantBackgroundColor #FFF9C4
+  ParticipantBorderColor DarkRed
+  LifeLineBackgroundColor white
+  ArrowColor DarkBlue
+  ActorBorderColor black
+  ActorBackgroundColor #E3F2FD
+}
+
+actor ":Librarian" as Lib
+participant ":ReturnForm" as Form
+participant ":ReturnCntrlr" as Ctrl
+participant ":BorrowTransaction" as Transact
+participant ":Fine" as Fine
+participant ":BookCopy" as Copy
+participant ":Reservation" as Res
+
+Lib -> Form : fillForm(accessionNo)
+activate Form
+
+Form -> Ctrl : submit()
+activate Ctrl
+
+Ctrl -> Transact : verifyLoan()
+activate Transact
+Transact --> Ctrl : activeLoanDetails
+deactivate Transact
+
+opt Overdue
+  Ctrl -> Fine : computeFine()
+  activate Fine
+  Fine --> Ctrl : fineAmount
+  deactivate Fine
+end
+
+Ctrl -> Transact : recordReturn(status=Returned)
+activate Transact
+Transact --> Ctrl : returnConfirmed
+deactivate Transact
+
+Ctrl -> Copy : updateAvailability(status=Available)
+activate Copy
+Copy --> Ctrl : copyUpdated
+deactivate Copy
+
+Ctrl -> Res : checkReservationQueue()
+activate Res
+
+alt Reservation Exists
+  Res -> Copy : setStatus(OnHold)
+  Res -> Res : notifyNextPatron()
+  Res --> Ctrl : queueAdvised
+else No Waitlist
+  Res --> Ctrl : noReservation
+end
+deactivate Res
+
+Ctrl --> Form : showReturnSummary()
+Form --> Lib : issueReturnReceipt()
+
+deactivate Ctrl
+deactivate Form
+
+@enduml

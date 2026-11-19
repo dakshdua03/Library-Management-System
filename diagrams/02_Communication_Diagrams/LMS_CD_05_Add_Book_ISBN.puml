@@ -1,0 +1,31 @@
+@startuml LMS_CD_05_Add_Book_ISBN
+' Collaboration Diagram 5: Add Book by ISBN (Numbered Object Message Flow)
+title Collaboration (Communication) Diagram 5: Add Book by ISBN
+
+skinparam defaultTextAlignment center
+skinparam rectangle {
+  BackgroundColor #FFF9C4
+  BorderColor #8B0000
+  RoundCorner 8
+}
+skinparam actor {
+  BackgroundColor #E3F2FD
+  BorderColor black
+}
+
+actor ":Librarian" as Lib
+rectangle ":CatalogForm" as Form
+rectangle ":CatalogCntrlr" as Ctrl
+rectangle ":OpenLibraryAPI" as OL <<External>>
+rectangle ":GoogleBooksAPI" as GB <<External>>
+rectangle ":BookTitle" as Title
+rectangle ":BookCopy" as Copy
+
+Lib -right- Form : 1: enterISBN()\n5: enterManualDetails() [fallback]\n8: displayCatalogConfirmation() >
+Form -right- Ctrl : 2: submitISBN()\n5.1: submitManualDetails() >
+Ctrl -up- OL : 3: fetchMetadata() >
+Ctrl -up- GB : 4: fetchGoogleBooks() [fallback] >
+Ctrl -down- Title : 6: saveTitle() + downloadCover() >
+Ctrl -down- Copy : 7: createInitialCopy() >
+
+@enduml

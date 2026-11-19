@@ -1,0 +1,48 @@
+@startuml LMS_Arch_01_MVC
+title Architecture 1: Model-View-Controller (MVC)
+
+skinparam componentStyle rectangle
+skinparam roundCorner 8
+skinparam defaultTextAlignment center
+
+actor "Student / Librarian\n(Web Browser)" as Browser #E3F2FD
+
+rectangle "CONTROLLER\n(Django Views & URL Handlers)" as Controller #FFF9C4 {
+  note as N_Ctrl
+    • Request Parsing
+    • Circulation Logic
+    • Input Validation
+    • Role-based Limits
+  end note
+}
+
+rectangle "VIEW\n(Django Templates & Bootstrap UI)" as View #E8F5E9 {
+  note as N_View
+    • Dynamic HTML Rendering
+    • Catalog Search & Autocomplete
+    • Availability Display
+    • Queue Position Display
+  end note
+}
+
+database "MODEL\n(Django ORM & PostgreSQL)" as Model #FCE4EC {
+  note as N_Model
+    • BorrowingRules
+    • BookTitle & BookCopy
+    • Patron
+    • BorrowTransaction
+    • Reservation
+  end note
+}
+
+Browser --> Controller : 1: HTTP Request
+View --> Browser : 7: HTML / JSON Response
+
+Controller --> View : 2: Render Context
+View --> Controller : 3: User Events / Form Submit
+
+Controller --> Model : 4: Update (Atomic Transaction)
+View --> Model : 5: Refresh / Query
+Model --> View : 6: Query Results
+
+@enduml

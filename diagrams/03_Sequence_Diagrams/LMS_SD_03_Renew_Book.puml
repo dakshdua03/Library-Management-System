@@ -1,0 +1,65 @@
+@startuml LMS_SD_03_Renew_Book
+title Sequence Diagram 3: Renew Book
+
+autonumber
+skinparam sequence {
+  ParticipantBackgroundColor #FFF9C4
+  ParticipantBorderColor DarkRed
+  LifeLineBackgroundColor white
+  ArrowColor DarkBlue
+  ActorBorderColor black
+  ActorBackgroundColor #E3F2FD
+}
+
+actor ":Patron" as Patron
+participant ":RenewForm" as Form
+participant ":RenewCntrlr" as Ctrl
+participant ":Reservation" as Res
+participant ":BorrowTransaction" as Transact
+
+Patron -> Form : fillForm(borrowId)
+activate Form
+
+Form -> Ctrl : submit()
+activate Ctrl
+
+Ctrl -> Res : verifyNoHold()
+activate Res
+Res --> Ctrl : holdStatus
+deactivate Res
+
+alt Active Reservation on this Title
+  Ctrl --> Form : displayError("Renewal Rejected: Reserved by another patron")
+else No Hold
+  Ctrl -> Transact : verifyRenewEligibility()
+  activate Transact
+  note right of Transact
+    Guards:
+    1. renewalCount < maxRenewals
+    2. Not overdue > 7 days
+  end note
+  Transact --> Ctrl : eligible
+  deactivate Transact
+
+  alt Ineligible
+    Ctrl --> Form : displayError("Renewal Rejected")
+  else Eligible
+    Ctrl -> Transact : extendDueDate()
+    activate Transact
+    Transact --> Ctrl : newDueDate
+    deactivate Transact
+
+    Ctrl -> Transact : updateRenewCount()
+    activate Transact
+    Transact --> Ctrl : updatedCount
+    deactivate Transact
+
+    Ctrl --> Form : showSuccess(newDueDate)
+    Form --> Patron : displayUpdatedDueCard()
+  end
+end
+
+deactivate Ctrl
+deactivate Form
+
+@enduml

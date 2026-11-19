@@ -1,0 +1,34 @@
+@startuml LMS_Arch_03_Repository
+title Architecture 3: Repository Architecture
+
+skinparam componentStyle rectangle
+skinparam roundCorner 8
+skinparam defaultTextAlignment center
+
+database "CENTRAL LMS REPOSITORY\n(PostgreSQL / SQLite)\n\n• BookTitle\n• BookCopy\n• Patron\n• BorrowTransaction\n• Reservation\n• BorrowingRules" as Repo #FCE4EC
+
+rectangle "Catalog ISBN Tool\n(API Fetcher)" as Tool_ISBN #E3F2FD
+rectangle "Reserve Tool\n(FCFS Queue Manager)" as Tool_Reserve #E8F5E9
+rectangle "Search Tool\n(Catalog & Locator)" as Tool_Search #E8F5E9
+rectangle "Report Generator\n(Overdue & Popular CSV)" as Tool_Report #FFF9C4
+rectangle "Email Notifier\n(SMTP Reminders)" as Tool_Email #FFF9C4
+rectangle "Issue / Return Tool\n(Circulation Engine)" as Tool_Circulation #FFE0B2
+rectangle "Fine Calculator" as Tool_Fine #FFE0B2
+
+Tool_ISBN -down-> Repo : Writes Catalog
+Tool_Reserve <-down-> Repo : Reads / Writes Queue
+Tool_Search -left-> Repo : Queries Titles
+Tool_Report -left-> Repo : Reads Statistics
+Tool_Email -left-> Repo : Reads Dues
+Tool_Circulation <-up-> Repo : Reads Eligibility / Records Loans
+Tool_Fine -up-> Tool_Circulation : Computes Fine
+Tool_Circulation -up-> Repo : Updates Fines
+
+note top of Repo
+  **Repository Pattern:**
+  All tools communicate strictly via
+  the shared repository — no direct
+  tool-to-tool connections.
+end note
+
+@enduml

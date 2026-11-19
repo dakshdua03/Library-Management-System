@@ -1,0 +1,72 @@
+@startuml LMS_SD_05_Add_Book_ISBN
+title Sequence Diagram 5: Add Book by ISBN
+
+autonumber
+skinparam sequence {
+  ParticipantBackgroundColor #FFF9C4
+  ParticipantBorderColor DarkRed
+  LifeLineBackgroundColor white
+  ArrowColor DarkBlue
+  ActorBorderColor black
+  ActorBackgroundColor #E3F2FD
+}
+
+actor ":Librarian" as Lib
+participant ":CatalogForm" as Form
+participant ":CatalogCntrlr" as Ctrl
+participant ":OpenLibraryAPI" as OL <<External>>
+participant ":GoogleBooksAPI" as GB <<External>>
+participant ":BookTitle" as Title
+participant ":BookCopy" as Copy
+
+Lib -> Form : enterISBN()
+activate Form
+
+Form -> Ctrl : submitISBN()
+activate Ctrl
+
+Ctrl -> OL : fetchMetadata()
+activate OL
+
+alt OpenLibrary Responds
+  OL --> Ctrl : bookData(title, authors, publisher, year)
+else OpenLibrary Fails
+  OL --> Ctrl : null / timeout
+  deactivate OL
+
+  Ctrl -> GB : fetchGoogleBooks()
+  activate GB
+  alt Google Books Responds
+    GB --> Ctrl : bookData
+  else Both APIs Fail
+    GB --> Ctrl : null / 404
+    deactivate GB
+
+    Ctrl --> Form : promptManualEntry()
+    Lib -> Form : enterManualDetails()
+    Form -> Ctrl : submitManualDetails()
+  end
+end
+
+Ctrl -> Title : saveTitle()
+activate Title
+Title --> Ctrl : titleSaved
+deactivate Title
+
+opt Cover URL Available
+  Ctrl -> Ctrl : downloadCover()
+  Ctrl -> Title : updateCoverPath()
+end
+
+Ctrl -> Copy : createInitialCopy()
+activate Copy
+Copy --> Ctrl : copySaved
+deactivate Copy
+
+Ctrl --> Form : showSuccess()
+Form --> Lib : displayConfirmation()
+
+deactivate Ctrl
+deactivate Form
+
+@enduml

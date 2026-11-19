@@ -1,0 +1,44 @@
+@startuml LMS_Arch_02_Layered_LIBSYS
+title Architecture 2: 5-Layered Architecture (LIBSYS)
+
+skinparam rectangle {
+  BackgroundColor<<L5>> #E3F2FD
+  BackgroundColor<<L4>> #E8F5E9
+  BackgroundColor<<L3>> #FFF9C4
+  BackgroundColor<<L2>> #FFE0B2
+  BackgroundColor<<L1>> #FCE4EC
+  BorderColor #333333
+  RoundCorner 6
+}
+skinparam defaultTextAlignment center
+
+rectangle "Layer 5: Web Browser Interface\n(Librarian & Student / Faculty / Staff Portal)" as L5 <<L5>>
+
+rectangle "Layer 4: UI & Session Services\nLogin / Auth  |  Forms & Query Manager  |  Receipt Generator" as L4 <<L4>>
+
+rectangle "Layer 3: Business Services\nSearch Catalog  |  Borrowing Rules Engine  |  Fine Accounting" as L3 <<L3>>
+
+rectangle "Layer 2: Inventory Management\nInventory State  |  Physical Locator (Rack-Shelf)" as L2 <<L2>>
+
+rectangle "Layer 1: Central Database\nBookTitle  |  BookCopy  |  Patron  |  BorrowTransaction  |  Reservation" as L1 <<L1>>
+
+L5 -down-> L4 : uses
+L4 -down-> L3 : uses
+L3 -down-> L2 : uses
+L2 -down-> L1 : uses
+
+note right of L5
+  Campus intranet access.
+  Role-specific dashboard.
+end note
+
+note right of L3
+  5-point issue validation,
+  auto-fine & renewal rules.
+end note
+
+note right of L1
+  ACID-compliant relational storage.
+end note
+
+@enduml

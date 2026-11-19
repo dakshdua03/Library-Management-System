@@ -1,0 +1,22 @@
+@startuml LMS_Sequence_Return
+title Return Book (Detailed Simple)
+skinparam sequence {
+  ParticipantBackgroundColor #FFF9C4
+  ParticipantBorderColor DarkRed
+}
+actor ":Librarian" as Lib
+participant ":ReturnForm" as F
+participant ":ReturnCntrlr" as C
+participant ":BorrowTransaction" as T
+participant ":Fine" as Fine
+participant ":BookCopy" as B
+participant ":Reservation" as R
+
+Lib -> F : 1 : fillForm()
+F -> C : 2 : submit()
+C -> T : 3 : verifyLoan()
+C -> Fine : 4 : computeFine()
+C -> T : 5 : recordReturn()
+C -> B : 6 : updateAvailability()
+C -> R : 7 : checkReservationQueue()
+@enduml

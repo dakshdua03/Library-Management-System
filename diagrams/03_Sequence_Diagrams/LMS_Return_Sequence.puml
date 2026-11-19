@@ -1,0 +1,20 @@
+@startuml LMS_Return_Sequence
+title Return Book (Simple)
+skinparam sequence {
+  ParticipantBackgroundColor LightYellow
+  ParticipantBorderColor DarkRed
+}
+actor " : Librarian" as Teller
+participant ": ReturnForm" as ReturnForm
+participant ": ReturnCntrlr" as ReturnCntrlr
+participant ": Book" as Book
+participant ": Patron" as Patron
+participant ": BorrowingRecord" as Transact
+
+Teller -> ReturnForm : 1 : fillForm()
+ReturnForm -> ReturnCntrlr : 2 : submit()
+ReturnCntrlr -> Book : 3 : verifyBook()
+ReturnCntrlr -> Patron : 4 : verifyReturnPrvlg()
+ReturnCntrlr -> Transact : 5 : recordReturn()
+ReturnCntrlr -> Book : 6 : updateBook()
+@enduml
