@@ -125,23 +125,32 @@ def api_search_patrons():
 @login_required
 @role_required('Admin', 'Librarian')
 def api_search_copies():
-    """Autocomplete search for available book copies by accession no, title, or ISBN."""
+    """Autocomplete search for book copies by accession no, title, ISBN, or author."""
     q = request.args.get('q', '').strip()
     if not q:
         return jsonify([])
 
-    copies = (
+    words = q.split()
+    query = (
         db.session.query(BookCopy, BookTitle)
         .join(BookTitle, BookCopy.isbn == BookTitle.isbn)
-        .filter(
-            BookCopy.status == 'Available',
-            (
-                (BookCopy.accession_no.ilike(f"%{q}%")) |
-                (BookTitle.title.ilike(f"%{q}%")) |
-                (BookTitle.isbn.ilike(f"%{q}%"))
-            )
+    )
+    for word in words:
+        term = f"%{word}%"
+        query = query.filter(
+            (BookCopy.accession_no.ilike(term)) |
+            (BookTitle.title.ilike(term)) |
+            (BookTitle.isbn.ilike(term)) |
+            (BookTitle.authors.ilike(term))
         )
-        .limit(8)
+
+    copies = (
+        query.order_by(
+            (BookCopy.status == 'Available').desc(),
+            BookTitle.title.asc(),
+            BookCopy.accession_no.asc()
+        )
+        .limit(10)
         .all()
     )
 
@@ -151,7 +160,9 @@ def api_search_copies():
             'accession_no': copy.accession_no,
             'isbn': title.isbn,
             'title': title.title,
-            'authors': title.authors,
+            'authors': title.authors or '',
+            'status': copy.status,
+            'is_available': copy.status == 'Available',
             'rack_no': copy.rack_no,
             'shelf_no': copy.shelf_no,
             'cover_path': title.cover_path

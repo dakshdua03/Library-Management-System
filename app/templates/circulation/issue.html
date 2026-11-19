@@ -219,22 +219,29 @@ copyQuery.addEventListener('input', async function() {
         copySuggestions.innerHTML = '';
 
         if (copies.length === 0) {
-            copySuggestions.innerHTML = '<div class="list-group-item text-muted small">No available copies found</div>';
+            copySuggestions.innerHTML = '<div class="list-group-item text-muted small">No book copies found matching this title, accession, or ISBN</div>';
         } else {
             copies.forEach(c => {
                 const item = document.createElement('a');
-                item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                item.className = `list-group-item list-group-item-action d-flex justify-content-between align-items-center ${c.is_available ? '' : 'list-group-item-light opacity-75'}`;
                 item.href = '#';
                 item.innerHTML = `
                     <div>
                         <div class="fw-bold">${c.title}</div>
-                        <div class="small text-muted">Acc: <strong>${c.accession_no}</strong> &bull; By ${c.authors || 'Unknown'}</div>
+                        <div class="small text-muted">Acc: <strong>${c.accession_no}</strong> &bull; By ${c.authors || 'Unknown'} &bull; ISBN: ${c.isbn}</div>
                     </div>
-                    <span class="badge bg-light text-dark border">Rack ${c.rack_no || '-'}, Shelf ${c.shelf_no || '-'}</span>
+                    <div class="text-end">
+                        <span class="badge ${c.is_available ? 'bg-success' : 'bg-warning text-dark'} mb-1">${c.status}</span>
+                        <div class="small text-muted font-monospace">Rack ${c.rack_no || '-'}, Shelf ${c.shelf_no || '-'}</div>
+                    </div>
                 `;
                 item.onclick = (e) => {
                     e.preventDefault();
-                    selectCopy(c);
+                    if (c.is_available) {
+                        selectCopy(c);
+                    } else {
+                        alert(`Copy ${c.accession_no} is currently ${c.status}. Please select an Available copy or wait for return.`);
+                    }
                 };
                 copySuggestions.appendChild(item);
             });
