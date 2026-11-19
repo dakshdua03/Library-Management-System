@@ -14,6 +14,9 @@ Developed by: **Daksh Dua** (`25MCMC21`), Master of Computer Applications (MCA),
 > [!IMPORTANT]
 > **Faculty Presentation & Viva Guide:**  
 > A comprehensive guide for faculty evaluation, covering the architecture diagrams, feature matrix, and automated test walkthrough, is available in [FACULTY_PRESENTATION_GUIDE.md](FACULTY_PRESENTATION_GUIDE.md).
+>
+> **Formal Software Testing Documentation (White-Box & Black-Box):**  
+> Complete V&V analysis including Control Flow Graphs (CFG), Cyclomatic Complexity $V(G)$, Basis Path Testing, Equivalence Partitioning (EP), Boundary Value Analysis (BVA), and Decision Tables is documented in [TESTING_DOCUMENTATION.md](TESTING_DOCUMENTATION.md).
 
 ---
 
@@ -34,6 +37,7 @@ All 25 software engineering diagrams are organized into categorized subdirectori
 ```
 Implementation/
 ├── FACULTY_PRESENTATION_GUIDE.md # Complete viva, diagram & test walkthrough guide
+├── TESTING_DOCUMENTATION.md     # Formal White-Box & Black-Box Testing Report (IEEE 829)
 ├── README.md                    # Project overview & quickstart
 ├── requirements.txt             # Locked Python dependencies
 ├── run.py                       # App entrypoint & automated database initialization
