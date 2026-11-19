@@ -17,6 +17,7 @@ def create_app(config_class=Config):
     from app.routes.circulation import circulation_bp
     from app.routes.selfservice import selfservice_bp
     from app.routes.reports import reports_bp
+    from app.routes.qa import qa_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
@@ -25,5 +26,6 @@ def create_app(config_class=Config):
     app.register_blueprint(circulation_bp)
     app.register_blueprint(selfservice_bp)
     app.register_blueprint(reports_bp)
+    app.register_blueprint(qa_bp)
 
     return app
